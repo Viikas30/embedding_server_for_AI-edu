@@ -10,7 +10,7 @@ app.use(express.json());
 
 let embedder;
 
-const openrouter_api_key = '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'; // Use env var in production!
+const openrouter_api_key = ''; 
 const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
   apiKey: openrouter_api_key,
@@ -34,7 +34,7 @@ app.post('/embed', async (req, res) => {
     if (Array.isArray(embedding[0])) {
       embedding = embedding[0];
     }
-    embedding = Array.from(embedding); // <-- This ensures it's a real array
+    embedding = Array.from(embedding);
 
     res.json(embedding);
   } catch (err) {
