@@ -2,13 +2,19 @@
 import express from 'express';
 import cors from 'cors';
 import { pipeline } from '@xenova/transformers';
-import { YoutubeTranscript } from 'youtube-transcript';
+import OpenAI from 'openai';
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
 let embedder;
+
+const openrouter_api_key = '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'; // Use env var in production!
+const openai = new OpenAI({
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: openrouter_api_key,
+});
 
 const init = async () => {
   console.log('Loading embedding model...');
@@ -37,7 +43,22 @@ app.post('/embed', async (req, res) => {
   }
 });
 
-
+app.post('/ncert-ai', async (req, res) => {
+  try {
+    const {  chapter } = req.body;
+    // Fallbacks if not provided
+    const prompt = `Generate a small para on NCERT class 11 physics chapter ${chapter },just return the para without any additional text.`;
+    const chatCompletion = await openai.chat.completions.create({
+      model: "deepseek/deepseek-r1-0528-qwen3-8b:free",
+      messages: [{ role: "user", content: prompt }],
+    });
+    const aiPara = chatCompletion.choices[0].message.content;
+    res.json({ para: aiPara });
+  } catch (error) {
+    console.error("Error communicating with OpenRouter:", error);
+    res.status(500).json({ error: "AI generation failed" });
+  }
+});
 
 
 init().then(() => {
